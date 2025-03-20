@@ -1,8 +1,6 @@
 ﻿using Amazon.Runtime;
 using Amazon.SimpleEmailV2;
 using Amazon.SimpleEmailV2.Model;
-using System.Text.Json;
-
 
 var client = new AmazonSimpleEmailServiceV2Client(
     // Replace the credentials with your own
@@ -52,5 +50,5 @@ try
 catch (Exception ex)
 {
     // Log the exception as JSON
-    Console.WriteLine(JsonSerializer.Serialize(ex));
+    Console.WriteLine(ex);
 }
