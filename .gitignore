@@ -1,1 +1,8 @@
 .idea
+*.pem
+./terraform/dkim_dns_value.txt
+./terraform/.terraform
+./terraform/.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+.tfvars

@@ -31,7 +31,7 @@ resource "aws_sesv2_email_identity" "postbox" {
   email_identity = var.domain
   dkim_signing_attributes {
     domain_signing_selector    = var.domain_signing_selector
-    domain_signing_private_key = var.private_key
+    domain_signing_private_key = local.private_key
   }
   tags = {
     name = "terraform-module"
@@ -47,14 +47,18 @@ resource "aws_sesv2_email_identity" "postbox" {
 
 # Fetch existing DNS zone details
 data "yandex_dns_zone" "postbox" {
-  name = var.dns_zone_name
+  folder_id = var.folder_id
+  name      = var.dns_zone_name
 }
 
 # Local variables for DNS record name formatting
 locals {
   zone             = ".${trimsuffix(data.yandex_dns_zone.postbox.zone, ".")}"
-  record_name      = replace(var.domain, local.zone, "")
+  record_name = replace(var.domain, local.zone, "")
   base_record_name = length(local.record_name) > 0 ? ".${local.record_name}" : ""
+  public_key       = fileexists(var.public_key) ? file(var.public_key) : var.public_key
+  private_key      = fileexists(var.private_key) ? file(var.private_key) : var.private_key
+  dkim             = "\"v=DKIM1;h=sha256;k=rsa;p=${trim(local.public_key, "\n")}\""
 }
 
 # Create DKIM TXT record in DNS
@@ -63,7 +67,7 @@ resource "yandex_dns_recordset" "postbox" {
   zone_id = data.yandex_dns_zone.postbox.id
   type    = "TXT"
   data = [
-    "\"v=DKIM1;h=sha256;k=rsa;p=${trim(var.public_key, "\n")}\"",
+    local.dkim,
   ]
   ttl = 600
 }
@@ -83,7 +87,7 @@ resource "aws_sesv2_configuration_set_event_destination" "kinesis" {
       # YDB Topic endpoint formatted as Kinesis stream ARN
       delivery_stream_arn = "arn:aws:yds:ru-central-1::https://yds.serverless.yandexcloud.net${yandex_ydb_database_serverless.postbox_data_db.database_path}:${yandex_ydb_topic.postbox_notifications.name}"
       # Dummy IAM role required by provider
-      iam_role_arn        = "arn:aws:iam::third-party:role/IAMRole-Not-Used"
+      iam_role_arn = "arn:aws:iam::third-party:role/IAMRole-Not-Used"
     }
 
     enabled = true

@@ -4,7 +4,10 @@ resource "yandex_ydb_database_serverless" "postbox_data_db" {
   # Name of the database instance
   name = "postbox-data-db-${random_string.random_suffix.result}"
   # The Yandex.Cloud folder where the database will be created
-  folder_id = var.folder_id
+  folder_id   = var.folder_id
+  location_id = "ru-central1"
+
+  sleep_after = 5
 }
 
 # Create a YDB Topic for handling email notifications

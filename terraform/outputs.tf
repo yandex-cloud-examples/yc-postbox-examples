@@ -3,7 +3,7 @@
 output "dkim_record" {
   value = {
     # The complete DKIM record value including DKIM version, hash algorithm, key type, and public key
-    value = "\"v=DKIM1;h=sha256;k=rsa;p=${trim(var.public_key, "\n")}\""
+    value = local.dkim
 
     # The fully qualified domain name for the DKIM record
     # Format: selector._domainkey.domain.com
