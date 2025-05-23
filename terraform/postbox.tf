@@ -53,8 +53,8 @@ data "yandex_dns_zone" "postbox" {
 
 # Local variables for DNS record name formatting
 locals {
-  zone             = ".${trimsuffix(data.yandex_dns_zone.postbox.zone, ".")}"
-  record_name = replace(var.domain, local.zone, "")
+  zone = trimsuffix(data.yandex_dns_zone.postbox.zone, ".")
+  record_name = trimsuffix(replace(var.domain, local.zone, ""), ".")
   base_record_name = length(local.record_name) > 0 ? ".${local.record_name}" : ""
   public_key       = fileexists(var.public_key) ? file(var.public_key) : var.public_key
   private_key      = fileexists(var.private_key) ? file(var.private_key) : var.private_key
