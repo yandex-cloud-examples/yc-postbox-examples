@@ -1,0 +1,21 @@
+{
+  "name": "yc-postbox-example",
+  "version": "1.0.0",
+  "description": "Example of sending emails through Yandex Cloud Postbox using AWS SDK for JavaScript",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.821.0"
+  },
+  "keywords": [
+    "yandex-cloud",
+    "postbox",
+    "aws-sdk",
+    "email"
+  ],
+  "author": "Nikolay Matrosov",
+  "license": "MIT"
+}
