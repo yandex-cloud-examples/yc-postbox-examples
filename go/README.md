@@ -52,7 +52,7 @@ terraform apply -var="folder_id=$YC_FOLDER_ID" -var="dns_zone_name=your-zone" -v
 
 ### 5. Configure Go application
 
-Update the constants in `go/main.go`:
+Update the constants in `go/simple/main.go`:
 
 ```go
 const (

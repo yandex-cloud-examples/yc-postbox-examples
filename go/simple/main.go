@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2"
 	"github.com/aws/aws-sdk-go-v2/service/sesv2/types"
 	transport "github.com/aws/smithy-go/endpoints"
@@ -34,6 +36,14 @@ const (
 )
 
 func main() {
+	cfg, err := config.LoadDefaultConfig(
+		context.Background(),
+	)
+	if err != nil {
+		fmt.Println("unable to load SDK config, " + err.Error())
+		os.Exit(1)
+	}
+
 	client := sesv2.New(sesv2.Options{
 		Region:             "ru-central1",
 		EndpointResolverV2: &resolverV2{},
@@ -42,7 +52,7 @@ func main() {
 		//Logger: logging.NewStandardLogger(
 		//	os.Stdout,
 		//),
-
+		Credentials: cfg.Credentials,
 		// By default, the SDK uses the default credentials provider chain.
 		// Uncomment the following lines to use static credentials.
 		//Credentials: &staticCredentialsProvider{
@@ -90,7 +100,7 @@ func main() {
 
 type resolverV2 struct{}
 
-func (*resolverV2) ResolveEndpoint(ctx context.Context, params sesv2.EndpointParameters) (
+func (*resolverV2) ResolveEndpoint(_ context.Context, _ sesv2.EndpointParameters) (
 	transport.Endpoint, error,
 ) {
 	u, err := url.Parse("https://postbox.cloud.yandex.net")
@@ -107,7 +117,7 @@ type staticCredentialsProvider struct {
 	secretAccessKey string
 }
 
-func (s *staticCredentialsProvider) Retrieve(ctx context.Context) (aws.Credentials, error) {
+func (s *staticCredentialsProvider) Retrieve(_ context.Context) (aws.Credentials, error) {
 	return aws.Credentials{
 		AccessKeyID:     s.accessKeyID,
 		SecretAccessKey: s.secretAccessKey,
