@@ -7,5 +7,6 @@ terraform/.terraform.lock.hcl
 *.tfstate.*
 .tfvars
 
+.env
 .venv
 javascript/node_modules
