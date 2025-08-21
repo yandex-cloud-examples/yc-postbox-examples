@@ -8,4 +8,4 @@ terraform/.terraform.lock.hcl
 .tfvars
 
 .venv
-javascript/node_modules
+node_modules
