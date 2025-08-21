@@ -62,7 +62,7 @@ npm install
 
 ### 6. Configure JavaScript application
 
-Update the constants in `javascript/main.js`:
+Update the constants in `javascript/smtp.js`:
 
 ```javascript
 // Constants
@@ -71,7 +71,7 @@ const RECIPIENT = "recipient@example.com";
 // Other settings as needed
 ```
 
-To use static credentials, uncomment and update the following section in `main.js`:
+To use static credentials, uncomment and update the following section in `smtp.js`:
 
 ```javascript
 credentials: {

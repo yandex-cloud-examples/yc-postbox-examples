@@ -5,7 +5,8 @@
   "main": "main.js",
   "type": "module",
   "scripts": {
-    "start": "node main.js"
+    "smtp": "node main.js smtp",
+    "sdk": "node main.js sdk"
   },
   "dependencies": {
     "@aws-sdk/client-sesv2": "^3.872.0",
