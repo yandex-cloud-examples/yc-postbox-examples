@@ -1,5 +1,5 @@
 {
-  "name": "yc-postbox-example",
+  "name": "yc-postbox-example-aws-sdk",
   "version": "1.0.0",
   "description": "Example of sending emails through Yandex Cloud Postbox using AWS SDK for JavaScript",
   "main": "main.js",

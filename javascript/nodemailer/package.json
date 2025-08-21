@@ -1,0 +1,26 @@
+{
+  "name": "yc-postbox-example-nodemailer",
+  "version": "1.0.0",
+  "description": "Example of sending emails through Yandex Cloud Postbox using Nodemailer",
+  "main": "main.js",
+  "type": "module",
+  "scripts": {
+    "smtp": "node main.js smtp",
+    "sdk": "node main.js sdk"
+  },
+  "dependencies": {
+    "@aws-sdk/client-sesv2": "^3.872.0",
+    "nodemailer": "^7.0.5"
+  },
+  "keywords": [
+    "yandex-cloud",
+    "postbox",
+    "aws-sdk",
+    "email"
+  ],
+  "author": "Nikolay Matrosov",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/nodemailer": "^7.0.1"
+  }
+}

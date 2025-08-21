@@ -1,5 +1,5 @@
 // AWS SDK for JavaScript v3 (ESM)
-import { SESv2Client, SendEmailCommand } from '@aws-sdk/client-sesv2';
+import {SendEmailCommand, SESv2Client} from '@aws-sdk/client-sesv2';
 
 // Constants (same as in the Go and Python versions)
 // Sender address must be verified with Amazon SES.
