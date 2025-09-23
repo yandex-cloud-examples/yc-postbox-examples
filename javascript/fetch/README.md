@@ -1,3 +1,305 @@
+# Клиент Yandex Cloud Postbox API для Node.js
+
+> **⚠️ Отказ от ответственности:** Этот код предназначен только для демонстрационных целей и **не должен** использоваться в производственной среде. Для производственного использования, пожалуйста, используйте официальный AWS SDK для безопасной, надежной и полностью поддерживаемой реализации.
+
+Клиент на чистом JavaScript для отправки электронных писем через API Yandex Cloud Postbox. Эта реализация использует только стандартные JavaScript API (fetch, Web Crypto API) и не требует внешних зависимостей.
+
+## Возможности
+
+- ✅ **Чистый JavaScript** - Никаких внешних зависимостей, использует только стандартные Node.js API
+- ✅ **AWS Signature V4** - Правильная реализация аутентификации
+- ✅ **Несколько типов писем** - Поддержка простых, шаблонных и raw-писем
+- ✅ **Современный Async/Await** - Чистый API на основе промисов
+- ✅ **Node.js 18+** - Использует нативные Web Crypto API и fetch
+- ✅ **Обработка ошибок** - Комплексная обработка ошибок с подробными сообщениями
+- ✅ **Валидация входных данных** - Валидация email-адресов и обязательных полей
+- ✅ **Логика повторов** - Экспоненциальная задержка с джиттером для временных сбоев
+- ✅ **Ограничение скорости** - Защита от превышения лимитов на стороне клиента
+- ✅ **Тайм-аут запросов** - Настраиваемый тайм-аут с AbortController
+- ✅ **Отладочное логирование** - Опциональный режим отладки для устранения неполадок
+- ✅ **Поддержка TypeScript** - Полные определения типов TypeScript включены
+
+## Быстрый старт
+
+### 1. Установка и настройка
+
+```javascript
+const PostboxClient = require('./main.js');
+
+const client = new PostboxClient({
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    region: 'ru-central1', // По умолчанию: ru-central1
+    host: 'postbox.cloud.yandex.net', // Хост по умолчанию
+    timeout: 30000, // Тайм-аут запроса в мс (по умолчанию: 30000)
+    maxRetries: 3, // Максимальное количество повторов (по умолчанию: 3)
+    maxJitter: 1000, // Максимальный джиттер для повторов в мс (по умолчанию: 1000)
+    minRequestInterval: 100, // Минимальный интервал между запросами в мс (по умолчанию: 100)
+    debug: false // Включить отладочное логирование (по умолчанию: false)
+});
+```
+
+### 2. Отправка простого письма
+
+```javascript
+try {
+    const result = await client.sendSimpleEmail({
+        from: 'sender@example.com',
+        to: ['recipient@example.com'],
+        subject: 'Привет, мир!',
+        textContent: 'Это простое текстовое письмо',
+        htmlContent: '<h1>Привет, мир!</h1><p>Это HTML письмо</p>'
+    });
+
+    console.log('Письмо отправлено! ID сообщения:', result.MessageId);
+} catch (error) {
+    console.error('Не удалось отправить письмо:', error.message);
+}
+```
+
+### 3. Отправка письма по шаблону
+
+```javascript
+const result = await client.sendTemplateEmail({
+    from: 'sender@example.com',
+    to: ['recipient@example.com'],
+    templateContent: {
+        Subject: 'Добро пожаловать {{name}}!',
+        Text: 'Привет {{name}}, добро пожаловать в {{company}}!',
+        Html: '<h1>Привет {{name}}</h1><p>Добро пожаловать в {{company}}!</p>'
+    },
+    templateData: {
+        name: 'Иван Иванов',
+        company: 'Acme Corp'
+    }
+});
+```
+
+### 4. Отправка raw-письма
+
+```javascript
+const result = await client.sendRawEmail({
+    from: 'sender@example.com',
+    to: ['recipient@example.com'],
+    rawData: 'base64_encoded_mime_message'
+});
+```
+
+## Справочник API
+
+### Параметры конструктора
+
+| Параметр             | Тип     | По умолчанию               | Описание                                          |
+|----------------------|---------|----------------------------|---------------------------------------------------|
+| `accessKeyId`        | string  | обязательный               | ID ключа доступа Yandex Cloud                     |
+| `secretAccessKey`    | string  | обязательный               | Секретный ключ доступа Yandex Cloud              |
+| `region`             | string  | `ru-central1`              | Регион Yandex Cloud                               |
+| `host`               | string  | `postbox.cloud.yandex.net` | Хост API эндпоинта                                |
+| `timeout`            | number  | `30000`                    | Тайм-аут запроса в миллисекундах                  |
+| `maxRetries`         | number  | `3`                        | Максимальное количество повторов для неудачных запросов |
+| `maxJitter`          | number  | `1000`                     | Максимальный джиттер для задержки повторов (мс)   |
+| `minRequestInterval` | number  | `100`                      | Минимальный интервал между запросами (мс)         |
+| `debug`              | boolean | `false`                    | Включить отладочное логирование                   |
+
+### Параметры простого письма
+
+| Параметр               | Тип           | Обязательный | Описание                                  |
+|------------------------|---------------|--------------|-------------------------------------------|
+| `from`                 | string        | ✅            | Email адрес отправителя (должен быть верифицирован) |
+| `to`                   | string\|array | ✅            | Email адрес(а) получателя                 |
+| `subject`              | string        | ✅            | Тема письма                               |
+| `textContent`          | string        | ❌            | Текстовое содержимое                      |
+| `htmlContent`          | string        | ❌            | HTML содержимое                           |
+| `cc`                   | array         | ❌            | Получатели копии                          |
+| `bcc`                  | array         | ❌            | Получатели скрытой копии                  |
+| `configurationSetName` | string        | ❌            | Имя набора конфигурации                   |
+| `customHeaders`        | array         | ❌            | Пользовательские заголовки письма         |
+
+### Параметры письма по шаблону
+
+| Параметр               | Тип           | Обязательный | Описание                                      |
+|------------------------|---------------|--------------|-----------------------------------------------|
+| `from`                 | string        | ✅            | Email адрес отправителя                       |
+| `to`                   | string\|array | ✅            | Email адрес(а) получателя                     |
+| `templateContent`      | object        | ✅            | Содержимое шаблона с Subject, Text, Html      |
+| `templateData`         | object        | ✅            | Данные для подстановки в шаблон               |
+| `cc`                   | array         | ❌            | Получатели копии                              |
+| `bcc`                  | array         | ❌            | Получатели скрытой копии                      |
+| `configurationSetName` | string        | ❌            | Имя набора конфигурации                       |
+| `customHeaders`        | array         | ❌            | Пользовательские заголовки письма             |
+
+### Параметры raw-письма
+
+| Параметр               | Тип           | Обязательный | Описание                         |
+|------------------------|---------------|--------------|----------------------------------|
+| `from`                 | string        | ✅            | Email адрес отправителя          |
+| `to`                   | string\|array | ✅            | Email адрес(а) получателя        |
+| `rawData`              | string        | ✅            | Base64 закодированные raw данные письма |
+| `cc`                   | array         | ❌            | Получатели копии                 |
+| `bcc`                  | array         | ❌            | Получатели скрытой копии         |
+| `configurationSetName` | string        | ❌            | Имя набора конфигурации          |
+
+## Переменные окружения
+
+Настройте переменные окружения для безопасного управления учетными данными:
+
+```bash
+export AWS_ACCESS_KEY_ID="your_access_key_id"
+export AWS_SECRET_ACCESS_KEY="your_secret_access_key"
+```
+
+Или создайте файл `.env`:
+
+```bash
+AWS_ACCESS_KEY_ID=your_access_key_id
+AWS_SECRET_ACCESS_KEY=your_secret_access_key
+```
+
+## Обработка ошибок
+
+Клиент выбрасывает описательные ошибки для различных сценариев:
+
+```javascript
+try {
+    await client.sendSimpleEmail(options);
+} catch (error) {
+    if (error.message.includes('API Error')) {
+        // API вернул ответ с ошибкой (включает Request ID для отладки)
+        console.error('Ошибка API:', error.message);
+        // Пример: "API Error 403: Forbidden: Access denied (Request ID: abc123-def456)"
+    } else if (error.message.includes('Network error')) {
+        // Проблема с сетью/подключением
+        console.error('Сетевая ошибка:', error.message);
+    } else {
+        // Другие ошибки (валидация и т.д.)
+        console.error('Ошибка:', error.message);
+    }
+}
+```
+
+## Частые ошибки API
+
+| Код ошибки                                   | Описание                              |
+|----------------------------------------------|---------------------------------------|
+| `BadRequestException`                        | Неверные параметры запроса            |
+| `BadRequestException: sender is not allowed` | Отправитель не в списке разрешенных   |
+| `AccountSuspendedException`                  | Аккаунт заблокирован навсегда         |
+| `SendingPausedException`                     | Аккаунт заблокирован временно         |
+| `MessageRejected`                            | Неверные данные письма                |
+| `MailFromDomainNotVerifiedException`         | Адрес отправителя не верифицирован    |
+| `NotFoundException`                          | Ресурс не найден                      |
+| `TooManyRequestsException`                   | Превышен лимит скорости               |
+| `LimitExceededException`                     | Превышена квота                       |
+
+### Ошибки HTTP статус-кодов
+
+| Статус | Описание              | Частые причины                                                     |
+|--------|-----------------------|--------------------------------------------------------------------|
+| `400`  | Bad Request           | Неверный JSON, отсутствуют обязательные поля                      |
+| `401`  | Unauthorized          | Неверный ключ доступа или секрет                                   |
+| `403`  | Forbidden             | Учетные данные верны, но нет прав, отправитель не верифицирован    |
+| `404`  | Not Found             | Неверный URL API эндпоинта                                         |
+| `429`  | Too Many Requests     | Ограничение скорости, замедлите запросы                            |
+| `500`  | Internal Server Error | Временные проблемы сервера                                         |
+
+## Устранение неполадок
+
+### Ошибка 403 Forbidden
+
+Это самая частая ошибка при начале работы с Postbox API:
+
+```text
+API Error 403: Forbidden: Access denied - check your credentials and permissions (Request ID: abc123-def456-789xyz)
+```
+
+**Возможные причины:**
+
+1. **Email отправителя не верифицирован** - Верифицируйте ваш домен/email отправителя в консоли Yandex Cloud
+2. **Неправильный сервисный аккаунт** - Убедитесь, что ваши ключи доступа принадлежат правильному сервисному аккаунту
+3. **Отсутствуют права IAM** - Сервисный аккаунт должен иметь роль `postbox.editor` или выше
+4. **Неверная подпись** - Проверьте, синхронизированы ли часы вашей системы
+
+💡 **Примечание:** Все сообщения об ошибках включают Request ID для целей отладки. Включите этот ID при обращении в поддержку.
+
+## Требования
+
+- **Node.js**: Node.js 18.0+ (для поддержки нативного Web Crypto API и fetch)
+- **Никаких дополнительных зависимостей** - Использует только встроенные Node.js API
+
+## Заметки по безопасности
+
+⚠️ **Важные соображения безопасности:**
+
+1. **Используйте переменные окружения** для хранения ключей доступа в продакшене
+2. **Никогда не хардкодьте учетные данные** в исходном коде
+3. **Реализуйте правильные средства контроля доступа** в вашем приложении
+4. **Верифицируйте адреса отправителей** в конфигурации Yandex Cloud Postbox
+5. **Используйте безопасные сетевые соединения** - API использует HTTPS по умолчанию
+
+## Запуск примера
+
+1. Установите переменные окружения:
+
+```bash
+export AWS_ACCESS_KEY_ID="your_access_key_id"
+export AWS_SECRET_ACCESS_KEY="your_secret_access_key"
+```
+
+2. Запустите пример:
+
+```bash
+node example.js
+```
+
+Пример включает:
+
+- ✅ Отправку простых писем
+- ✅ Письма по шаблону с подстановкой переменных
+- ✅ Письма с получателями копии и скрытой копии
+- ✅ Обработку ошибок и валидацию
+
+## Пользовательское использование
+
+Для ваших собственных проектов создайте новый файл с вашей специфической логикой отправки писем:
+
+```javascript
+const PostboxClient = require('./main.js');
+
+async function sendWelcomeEmail(userEmail, userName) {
+    const client = new PostboxClient({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    });
+
+    try {
+        const result = await client.sendSimpleEmail({
+            from: 'noreply@yourcompany.com', // Ваш верифицированный отправитель
+            to: [userEmail],
+            subject: `Добро пожаловать ${userName}!`,
+            textContent: `Привет ${userName}, добро пожаловать на нашу платформу!`,
+            htmlContent: `<h1>Добро пожаловать ${userName}!</h1><p>Спасибо за присоединение к нам.</p>`
+        });
+
+        console.log('✅ Приветственное письмо отправлено!');
+        return result.MessageId;
+    } catch (error) {
+        console.error('❌ Не удалось отправить приветственное письмо:', error.message);
+        throw error;
+    }
+}
+
+// Использование
+sendWelcomeEmail('user@example.com', 'Иван Иванов');
+```
+
+📋 **См. `example.js` для комплексных примеров, включающих письма по шаблону, копии/скрытые копии и обработку ошибок.**
+
+## Лицензия
+
+Эта реализация предоставляется как есть для образовательных и развивающих целей.
+
+---
+
 # Yandex Cloud Postbox API Client for Node.js
 
 > **⚠️ Disclaimer:** This code is for demonstration purposes only and should **not
@@ -247,7 +549,7 @@ export AWS_ACCESS_KEY_ID="your_access_key_id"
 export AWS_SECRET_ACCESS_KEY="your_secret_access_key"
 ```
 
-1. Run the example:
+2. Run the example:
 
 ```bash
 node example.js
